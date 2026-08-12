@@ -1236,8 +1236,11 @@ class GCP(clouds.Cloud):
             # These series don't support pd-standard, use pd-balanced for LOW.
             _propagate_disk_type(
                 lowest=tier2name[resources_utils.DiskTier.MEDIUM])
-        if instance_type.startswith('a3-ultragpu') or series in ('n4', 'a4'):
-            # a3-ultragpu, n4, and a4 instances only support hyperdisk-balanced.
+        if instance_type.startswith('a3-ultragpu') or series in ('n4', 'a4',
+                                                                  'g4'):
+            # a3-ultragpu, n4, a4, and g4 (NVIDIA RTX PRO 6000) instances only
+            # support hyperdisk-balanced; pd-* boot disks are rejected by GCP
+            # ("pd-balanced disk type cannot be used by g4-standard-48").
             _propagate_disk_type(all='hyperdisk-balanced')
 
         # Series specific handling

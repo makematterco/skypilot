@@ -85,6 +85,15 @@ def get_data_disk_tier_mapping(
         num_cpus = int(instance_type.split('-')[2])  # type: ignore
         if num_cpus < 88:
             tier2name[resources_utils.DiskTier.ULTRA] = 'hyperdisk-balanced'
+    elif series in ['g4']:
+        # g4 (NVIDIA RTX PRO 6000) only supports Hyperdisk; pd-* boot/data disks
+        # are rejected by GCP ("pd-balanced disk type cannot be used by
+        # g4-standard-48 machine type"), which SkyPilot otherwise surfaces as a
+        # spurious ResourcesUnavailableError. Mirror the a4/x4 mapping.
+        tier2name[resources_utils.DiskTier.ULTRA] = 'hyperdisk-extreme'
+        tier2name[resources_utils.DiskTier.HIGH] = 'hyperdisk-balanced'
+        tier2name[resources_utils.DiskTier.MEDIUM] = 'hyperdisk-balanced'
+        tier2name[resources_utils.DiskTier.LOW] = 'hyperdisk-balanced'
     elif series in ['n4']:
         tier2name[resources_utils.DiskTier.ULTRA] = 'hyperdisk-balanced'
         tier2name[resources_utils.DiskTier.HIGH] = 'hyperdisk-balanced'
