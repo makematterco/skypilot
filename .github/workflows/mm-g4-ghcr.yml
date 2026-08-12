@@ -1,0 +1,42 @@
+name: mm-g4-ghcr
+
+# Build the g4/RTX PRO 6000 Hyperdisk-patched API-server image and push to
+# GHCR, using the built-in GITHUB_TOKEN (no external Docker Hub secret needed).
+on:
+  workflow_dispatch:
+  push:
+    branches: [g4-hyperdisk]
+    paths:
+      - sky/clouds/gcp.py
+      - sky/provision/gcp/volume_utils.py
+      - Dockerfile.mm-g4
+      - .github/workflows/mm-g4-ghcr.yml
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: mm-g4-ghcr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.mm-g4
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/makematterco/skypilot:0.13.0-g4hyperdisk
+            ghcr.io/makematterco/skypilot:0.13.0-g4hyperdisk-${{ github.sha }}

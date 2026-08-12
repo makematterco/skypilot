@@ -1,0 +1,7 @@
+# Thin overlay on the upstream 0.13.0 API-server image with the g4 / RTX PRO
+# 6000 Hyperdisk fix layered on top. Overlaying the exact deployed image (vs a
+# full from-source rebuild) guarantees byte-for-byte compatibility with the
+# running server; only the two patched modules change.
+FROM berkeleyskypilot/skypilot:0.13.0
+COPY sky/clouds/gcp.py /usr/local/lib/python3.10/site-packages/sky/clouds/gcp.py
+COPY sky/provision/gcp/volume_utils.py /usr/local/lib/python3.10/site-packages/sky/provision/gcp/volume_utils.py
