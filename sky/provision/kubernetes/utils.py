@@ -523,9 +523,14 @@ def get_gke_accelerator_name(accelerator: str) -> str:
         # H100 is named as H100-80GB in GKE.
         accelerator = 'H100-80GB'
     if accelerator in ('A100-80GB', 'L4', 'H100-80GB', 'H100-MEGA-80GB',
-                       'B200'):
+                       'B200', 'RTX-PRO-6000'):
         # A100-80GB, L4, H100-80GB and H100-MEGA-80GB
-        # have a different name pattern.
+        # have a different name pattern. RTX-PRO-6000 (g4) is labeled
+        # nvidia-rtx-pro-6000 by GKE, not nvidia-tesla-rtx-pro-6000, so the
+        # forward map in GKELabelFormatter.get_accelerator_from_label_value
+        # (nvidia-rtx-pro-6000 -> RTX-PRO-6000) only round-trips through this
+        # branch; the default nvidia-tesla-<x> pattern would emit a
+        # nodeSelector that matches no node and the g4 pool never autoscales.
         return 'nvidia-{}'.format(accelerator.lower())
     elif accelerator == 'H200':
         # H200s on GCP use this label format

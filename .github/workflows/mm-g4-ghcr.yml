@@ -10,6 +10,7 @@ on:
       - sky/clouds/gcp.py
       - sky/provision/gcp/volume_utils.py
       - sky/catalog/gcp_catalog.py
+      - sky/provision/kubernetes/utils.py
       - Dockerfile.mm-g4
       - .github/workflows/mm-g4-ghcr.yml
 

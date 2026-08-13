@@ -9,7 +9,10 @@
 #   sky/provision/gcp/volume_utils.py - g4 -> Hyperdisk data disk
 #   sky/catalog/gcp_catalog.py        - g4 shapes report their bundled
 #                                       RTXPRO6000 GPUs
+#   sky/provision/kubernetes/utils.py - GKE RTX-PRO-6000 -> nvidia-rtx-pro-6000
+#                                       node label (autoscaler nodeSelector)
 FROM berkeleyskypilot/skypilot:0.13.0
 COPY sky/clouds/gcp.py /usr/local/lib/python3.10/site-packages/sky/clouds/gcp.py
 COPY sky/provision/gcp/volume_utils.py /usr/local/lib/python3.10/site-packages/sky/provision/gcp/volume_utils.py
 COPY sky/catalog/gcp_catalog.py /usr/local/lib/python3.10/site-packages/sky/catalog/gcp_catalog.py
+COPY sky/provision/kubernetes/utils.py /usr/local/lib/python3.10/site-packages/sky/provision/kubernetes/utils.py
