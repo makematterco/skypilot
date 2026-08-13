@@ -1,7 +1,15 @@
 # Thin overlay on the upstream 0.13.0 API-server image with the g4 / RTX PRO
-# 6000 Hyperdisk fix layered on top. Overlaying the exact deployed image (vs a
-# full from-source rebuild) guarantees byte-for-byte compatibility with the
-# running server; only the two patched modules change.
+# 6000 fixes layered on top. Overlaying the exact deployed image (vs a full
+# from-source rebuild) guarantees byte-for-byte compatibility with the running
+# server; only the patched modules change.
+#
+# Patched modules:
+#   sky/clouds/gcp.py                 - g4 -> Hyperdisk boot disk; RTX PRO 6000
+#                                       acceleratorType ('nvidia-rtx-pro-6000')
+#   sky/provision/gcp/volume_utils.py - g4 -> Hyperdisk data disk
+#   sky/catalog/gcp_catalog.py        - g4 shapes report their bundled
+#                                       RTXPRO6000 GPUs
 FROM berkeleyskypilot/skypilot:0.13.0
 COPY sky/clouds/gcp.py /usr/local/lib/python3.10/site-packages/sky/clouds/gcp.py
 COPY sky/provision/gcp/volume_utils.py /usr/local/lib/python3.10/site-packages/sky/provision/gcp/volume_utils.py
+COPY sky/catalog/gcp_catalog.py /usr/local/lib/python3.10/site-packages/sky/catalog/gcp_catalog.py

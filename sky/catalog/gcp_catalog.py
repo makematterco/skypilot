@@ -128,6 +128,24 @@ _ACC_INSTANCE_TYPE_DICTS = {
     'B200': {
         8: ['a4-highgpu-8g'],
     },
+    # G4 VMs bundle the NVIDIA RTX PRO 6000 Blackwell Server Edition; the GPUs
+    # come WITH the machine type rather than being attachable, so RTXPRO6000 can
+    # only be used with g4 and g4 only with RTXPRO6000 (same relationship as
+    # A100/A2 and L4/G2 above).
+    # Counts verified against the API:
+    #   gcloud compute machine-types list --filter="name~^g4-" \
+    #     --format="table(name,accelerators[0].guestAcceleratorCount)"
+    'RTXPRO6000': {
+        1: [
+            'g4-standard-6',
+            'g4-standard-12',
+            'g4-standard-24',
+            'g4-standard-48',
+        ],
+        2: ['g4-standard-96'],
+        4: ['g4-standard-192'],
+        8: ['g4-standard-384'],
+    },
 }
 # Enable GPU type inference from instance types
 _INSTANCE_TYPE_TO_ACC = {

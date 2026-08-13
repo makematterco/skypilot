@@ -531,6 +531,34 @@ class GCP(clouds.Cloud):
         # CUDA driver version 580 (open), CUDA Library 13.
         return _DEFAULT_GPU_IMAGE_ID
 
+    @staticmethod
+    def _get_gpu_acc_type(acc: str) -> str:
+        """Returns the GCP acceleratorType name for a GPU.
+
+        See https://cloud.google.com/compute/docs/gpus. Most GPUs follow the
+        legacy 'nvidia-tesla-<name>' pattern; the exceptions are enumerated
+        here.
+        """
+        if acc in ('A100-80GB', 'L4', 'B200'):
+            # A100-80GB and L4 have a different name pattern.
+            return f'nvidia-{acc.lower()}'
+        if acc in ('H100', 'H100-MEGA'):
+            return f'nvidia-{acc.lower()}-80gb'
+        if acc in ('H200',):
+            return f'nvidia-{acc.lower()}-141gb'
+        if acc == 'RTXPRO6000':
+            # G4 VMs bundle the NVIDIA RTX PRO 6000 Blackwell Server Edition.
+            # GCP's accelerator type is 'nvidia-rtx-pro-6000', which does not
+            # follow the 'nvidia-tesla-*' fallback below -- that fallback
+            # produced the nonexistent 'nvidia-tesla-rtxpro6000', which GCP
+            # rejected as notFound and SkyPilot surfaced as a spurious
+            # ResourcesUnavailableError.
+            # Verified against the API:
+            #   gcloud compute accelerator-types list \
+            #     --filter="zone:us-south1-a"  ->  nvidia-rtx-pro-6000
+            return 'nvidia-rtx-pro-6000'
+        return f'nvidia-tesla-{acc.lower()}'
+
     def make_deploy_resources_variables(
         self,
         resources: 'resources.Resources',
@@ -603,18 +631,7 @@ class GCP(clouds.Cloud):
                 # access TPU devices.
                 resources_vars['docker_run_options'] = ['--privileged']
             else:
-                # Convert to GCP names:
-                # https://cloud.google.com/compute/docs/gpus
-                if acc in ('A100-80GB', 'L4', 'B200'):
-                    # A100-80GB and L4 have a different name pattern.
-                    resources_vars['gpu'] = f'nvidia-{acc.lower()}'
-                elif acc in ('H100', 'H100-MEGA'):
-                    resources_vars['gpu'] = f'nvidia-{acc.lower()}-80gb'
-                elif acc in ('H200',):
-                    resources_vars['gpu'] = f'nvidia-{acc.lower()}-141gb'
-                else:
-                    resources_vars['gpu'] = 'nvidia-tesla-{}'.format(
-                        acc.lower())
+                resources_vars['gpu'] = GCP._get_gpu_acc_type(acc)
                 resources_vars['gpu_count'] = acc_count
                 if enable_gpu_direct or network_tier == resources_utils.NetworkTier.BEST:
                     # The actual image id is set in resources.py (see _try_validate_image_id)
@@ -1237,7 +1254,7 @@ class GCP(clouds.Cloud):
             _propagate_disk_type(
                 lowest=tier2name[resources_utils.DiskTier.MEDIUM])
         if instance_type.startswith('a3-ultragpu') or series in ('n4', 'a4',
-                                                                  'g4'):
+                                                                 'g4'):
             # a3-ultragpu, n4, a4, and g4 (NVIDIA RTX PRO 6000) instances only
             # support hyperdisk-balanced; pd-* boot disks are rejected by GCP
             # ("pd-balanced disk type cannot be used by g4-standard-48").

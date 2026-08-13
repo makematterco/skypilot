@@ -9,6 +9,7 @@ on:
     paths:
       - sky/clouds/gcp.py
       - sky/provision/gcp/volume_utils.py
+      - sky/catalog/gcp_catalog.py
       - Dockerfile.mm-g4
       - .github/workflows/mm-g4-ghcr.yml
 
